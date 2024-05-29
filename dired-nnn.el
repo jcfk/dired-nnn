@@ -43,17 +43,20 @@
 ;;;###autoload
 (defun dired-nnn--marked-files ()
   "Return list of the absolute paths of all marked files."
-  (delete-dups
-   (mapcan
-    (lambda (dired-buffer)
-      (let (dgmf)
-        (setq dgmf
-              (with-current-buffer (cdr dired-buffer)
-                (dired-get-marked-files nil nil nil t nil)))
-        (if (or (eq (length dgmf) 1) (eq (car dgmf) t))
-            (setq dgmf (cdr dgmf)))
-        dgmf))
-    dired-buffers)))
+  (seq-remove
+   (lambda (fpath)
+     (member (file-name-nondirectory fpath) '("." "..")))
+   (delete-dups
+    (mapcan
+     (lambda (dired-buffer)
+       (let (dgmf)
+         (setq dgmf
+               (with-current-buffer (cdr dired-buffer)
+                 (dired-get-marked-files nil nil nil t nil)))
+         (if (or (eq (length dgmf) 1) (eq (car dgmf) t))
+             (setq dgmf (cdr dgmf)))
+         dgmf))
+     dired-buffers))))
 
 ;;;###autoload
 (defun dired-nnn--dest-filename-func (dir)
@@ -62,15 +65,18 @@
     (file-name-concat dir (file-name-nondirectory file))))
 
 (defun dired-nnn-toggle-mark ()
-  "Toggle selection of the file or directory under the point."
-  (interactive)
-  (if (member
-       (dired-get-filename)
-       (dired-nnn--marked-files))
-      (dired-unmark nil)
-    (dired-mark nil)))
+  "Toggle selection of the file or directory under the point.
 
-;; The case of multiple selected files with the same basename.
+Cannot operate on '.' or '..'."
+  (interactive)
+  (condition-case nil
+      (if (member
+           (dired-get-filename nil nil)
+           (dired-nnn--marked-files))
+          (dired-unmark nil)
+        (dired-mark nil))
+    (error (message "Cannot operate on '.' or '..'"))))
+
 (defun dired-nnn-paste ()
   "Paste the selected files to the cwd."
   (interactive)
@@ -82,7 +88,6 @@
       (dired-unmark-all-files ?*)))
   (revert-buffer))
 
-;; The case of multiple selected files with the same basename.
 (defun dired-nnn-move ()
   "Move the selected files to the cwd."
   (interactive)
