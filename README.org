@@ -1,6 +1,19 @@
 * dired-nnn
 
-This emacs package implements nnn-like file toggle/move/paste on top of
-dired-ranger, which is part of [[https://github.com/Fuco1/dired-hacks][dired-hacks]].
+This emacs package implements nnn-like file select/move/paste, inspired by
+dired-ranger of dired-hacks.
 
+** Usage
+
+Example use-package:
+
+#+begin_src elisp
+(use-package dired-nnn
+  :config
+  (nmap
+    :keymaps 'dired-mode-map
+    "SPC" 'dired-nnn-toggle-mark
+    "p" 'dired-nnn-paste
+    "v" 'dired-nnn-move))
+#+end_src
 
