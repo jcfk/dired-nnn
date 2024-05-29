@@ -5,15 +5,12 @@ dired-ranger of dired-hacks.
 
 ** Usage
 
-Example use-package:
+Bind these functions as you please:
 
-#+begin_src elisp
-(use-package dired-nnn
-  :config
-  (nmap
-    :keymaps 'dired-mode-map
-    "SPC" 'dired-nnn-toggle-mark
-    "p" 'dired-nnn-paste
-    "v" 'dired-nnn-move))
-#+end_src
-
+| nnn key | nnn action | dired equivalent        |
+|---------+------------+-------------------------|
+| SPC     | Toggle sel | dired-nnn-toggle-mark   |
+| a       | Sel all    | dired-mark-subdir-files |
+| A       | Invert sel | dired-toggle-marks      |
+| p       | Paste sel  | dired-nnn-paste         |
+| v       | Move sel   | dired-nnn-move          |
