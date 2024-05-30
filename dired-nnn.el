@@ -40,7 +40,6 @@
   "Implementation of nnn-like file actions for Dired."
   :group 'dired-hacks)
 
-;;;###autoload
 (defun dired-nnn--marked-files ()
   "Return list of the absolute paths of all marked files."
   (seq-remove
@@ -58,12 +57,12 @@
          dgmf))
      dired-buffers))))
 
-;;;###autoload
 (defun dired-nnn--dest-filename-func (dir)
   "Return a function that renames files to under DIR."
   (lambda (file)
     (file-name-concat dir (file-name-nondirectory file))))
 
+;;;###autoload
 (defun dired-nnn-toggle-mark ()
   "Toggle selection of the file or directory under the point.
 
@@ -77,6 +76,7 @@ Cannot operate on '.' or '..'."
         (dired-mark nil))
     (error (message "Cannot operate on '.' or '..'"))))
 
+;;;###autoload
 (defun dired-nnn-paste ()
   "Paste the selected files to the cwd."
   (interactive)
@@ -88,6 +88,7 @@ Cannot operate on '.' or '..'."
       (dired-unmark-all-files ?*)))
   (revert-buffer))
 
+;;;###autoload
 (defun dired-nnn-move ()
   "Move the selected files to the cwd."
   (interactive)
