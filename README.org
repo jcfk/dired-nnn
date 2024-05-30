@@ -1,7 +1,7 @@
 * dired-nnn
 
-This emacs package implements [[https:github.com/jarun/nnn][nnn]]-like file select/move/paste, inspired by
-dired-ranger of dired-hacks.
+This emacs package implements nnn-like (github.com/jarun/nnn) file
+select/move/paste, inspired by dired-ranger of dired-hacks.
 
 ** Usage
 
