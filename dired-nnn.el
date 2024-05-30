@@ -38,7 +38,7 @@
 
 (defgroup dired-nnn nil
   "Implementation of nnn-like file actions for Dired."
-  :group 'dired-hacks)
+  :group 'dired-nnn)
 
 (defun dired-nnn--marked-files ()
   "Return list of the absolute paths of all marked files."
