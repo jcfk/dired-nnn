@@ -5,12 +5,26 @@ select/move/paste, inspired by dired-ranger of dired-hacks.
 
 ** Usage
 
-Bind these functions as you please:
+Functions:
 
-| nnn key | nnn action | dired equivalent        |
-|---------+------------+-------------------------|
-| SPC     | Toggle sel | dired-nnn-toggle-mark   |
-| a       | Sel all    | dired-mark-subdir-files |
-| A       | Invert sel | dired-toggle-marks      |
-| p       | Paste sel  | dired-nnn-paste         |
-| v       | Move sel   | dired-nnn-move          |
+- ~dired-nnn-toggle-mark~ toggles marking of the file at the point.
+- ~dired-nnn-paste~ pastes marked files from all dired buffers into the
+  ~dired-current-directory~ using ~copy-file~.
+- ~dired-nnn-move~ moves marked files from all dired buffers into the
+  ~dired-current-directory~ using ~rename-file~.
+
+Customization:
+
+- ~dired-nnn-mark-new-files~ (default: nil) controls whether newly moved or
+  pasted files are marked, for further actions or corrections.
+
+nnn equivalence:
+
+| nnn key | nnn action | dired equivalent                   |
+|---------+------------+------------------------------------|
+| SPC     | Toggle sel | dired-nnn-toggle-mark              |
+| a       | Sel all    | dired-mark-subdir-files (built-in) |
+| A       | Invert sel | dired-toggle-marks (built-in)      |
+| p       | Paste sel  | dired-nnn-paste                    |
+| v       | Move sel   | dired-nnn-move                     |
+
