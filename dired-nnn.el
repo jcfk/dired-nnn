@@ -40,6 +40,11 @@
   "Implementation of nnn-like file actions for Dired."
   :group 'dired-nnn)
 
+(defcustom dired-nnn-mark-new-files nil
+  "If non-nil, recently pasted or moved files will be marked."
+  :type 'boolean
+  :group 'dired-nnn)
+
 (defun dired-nnn--marked-files ()
   "Return list of the absolute paths of all marked files."
   (seq-remove
@@ -77,27 +82,42 @@ Cannot operate on '.' or '..'."
     (error (message "Cannot operate on '.' or '..'"))))
 
 ;;;###autoload
-(defun dired-nnn-paste ()
-  "Paste the selected files to the cwd."
-  (interactive)
-  (let ((dir (dired-current-directory)))
-    (dired-create-files #'copy-file "Copy" (dired-nnn--marked-files)
-                        (dired-nnn--dest-filename-func dir)))
-  (dolist (dired-buffer dired-buffers)
-    (with-current-buffer (cdr dired-buffer)
-      (dired-unmark-all-files ?*)))
-  (revert-buffer))
+(defun dired-nnn-paste (arg)
+  "Paste the selected files to the cwd.
+
+If `dired-nnn-mark-new-files' is non-nil, then recently created files will be
+marked.
+
+With prefix ARG, preserve marks on the original files. This overrides
+`dired-nnn-mark-new-files'."
+  (interactive "P")
+  (let ((dir (dired-current-directory))
+        (selected-files (dired-nnn--marked-files)))
+    (if (not arg)
+        (dolist (dired-buffer dired-buffers)
+          (with-current-buffer (cdr dired-buffer)
+            (dired-unmark-all-files ?*))))
+    (dired-create-files #'copy-file "Copy" selected-files
+                        (dired-nnn--dest-filename-func dir)
+                        (when (and dired-nnn-mark-new-files (not arg))
+                          ?*))
+    (revert-buffer)))
 
 ;;;###autoload
 (defun dired-nnn-move ()
-  "Move the selected files to the cwd."
+  "Move the selected files to the cwd.
+
+If `dired-nnn-mark-new-files' is non-nil, then recently created files will be
+marked."
   (interactive)
-  (let ((dir (dired-current-directory)))
-    (dired-create-files #'rename-file "Rename" (dired-nnn--marked-files)
-                        (dired-nnn--dest-filename-func dir)))
-  (dolist (dired-buffer dired-buffers)
-    (with-current-buffer (cdr dired-buffer)
-      (dired-unmark-all-files ?*)))
+  (let ((dir (dired-current-directory))
+        (selected-files (dired-nnn--marked-files)))
+    (dolist (dired-buffer dired-buffers)
+      (with-current-buffer (cdr dired-buffer)
+        (dired-unmark-all-files ?*)))
+    (dired-create-files #'rename-file "Rename" selected-files
+                        (dired-nnn--dest-filename-func dir)
+                        (when dired-nnn-mark-new-files ?*)))
   (revert-buffer))
 
 (provide 'dired-nnn)
