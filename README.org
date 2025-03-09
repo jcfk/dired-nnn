@@ -28,3 +28,26 @@ nnn equivalence:
 | p       | Paste sel  | dired-nnn-paste                    |
 | v       | Move sel   | dired-nnn-move                     |
 
+** ~doom-modeline~ segment
+
+Display the number of marked files in the modeline; mouse over to see their
+names.
+
+#+begin_src elisp
+(doom-modeline-def-segment dired-nnn
+  (let ((marked-files (dired-nnn--marked-files)))
+    (when (and (derived-mode-p 'dired-mode) (length> marked-files 0))
+      (propertize
+       (concat
+        (doom-modeline-spc)
+        (format "+%d" (length marked-files))
+        (doom-modeline-spc))
+       'face 'doom-modeline-highlight
+       'help-echo (concat
+                   "dired-nnn marked files:\n"
+                   (mapconcat
+                    (lambda (file)
+                      (format "  %s" file))
+                    marked-files "\n"))
+       'mouse-face 'doom-modeline-highlight))))
+#+end_src
