@@ -5,7 +5,7 @@
 ;; Version: 0.1
 ;; Homepage: https://github.com/jcfk/dired-nnn
 
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "28.2"))
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the “Software”), to deal
