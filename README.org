@@ -9,14 +9,14 @@ Functions:
 
 - ~dired-nnn-toggle-mark~ toggles marking of the file at the point.
 - ~dired-nnn-paste~ pastes marked files from all dired buffers into the
-  ~dired-current-directory~ using ~copy-file~.
+  ~dired-current-directory~ using ~dired-copy-file~.
 - ~dired-nnn-move~ moves marked files from all dired buffers into the
-  ~dired-current-directory~ using ~rename-file~.
+  ~dired-current-directory~ using ~dired-rename-file~.
 
 Customization:
 
-- ~dired-nnn-mark-new-files~ (default: nil) controls whether newly moved or
-  pasted files are marked, for further actions or corrections.
+- ~dired-nnn-mark-new-files~ (default: nil) control whether newly moved or
+  pasted files are marked for further actions.
 
 nnn equivalence:
 

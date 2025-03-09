@@ -46,78 +46,95 @@
   :group 'dired-nnn)
 
 (defun dired-nnn--marked-files ()
-  "Return list of the absolute paths of all marked files."
+  "Return list of the absolute paths of marked files in all dired buffers."
   (seq-remove
    (lambda (fpath)
      (member (file-name-nondirectory fpath) '("." "..")))
    (delete-dups
     (mapcan
-     (lambda (dired-buffer)
-       (let (dgmf)
-         (setq dgmf
-               (with-current-buffer (cdr dired-buffer)
-                 (dired-get-marked-files nil nil nil t nil)))
-         (if (or (eq (length dgmf) 1) (eq (car dgmf) t))
-             (setq dgmf (cdr dgmf)))
-         dgmf))
+     (lambda (dir-and-buf)
+       (when (buffer-live-p (cdr dir-and-buf))
+         (with-current-buffer (cdr dir-and-buf)
+           (let ((ret (dired-get-marked-files nil nil nil t nil)))
+             (cond ((length= ret 1) nil)
+                   ((and (length= ret 2) (eq (car ret) t))
+                    (cdr ret))
+                   (t ret))))))
      dired-buffers))))
 
-(defun dired-nnn--dest-filename-func (dir)
-  "Return a function that renames files to under DIR."
-  (lambda (file)
-    (file-name-concat dir (file-name-nondirectory file))))
+(defun dired-nnn--unmark-all-files ()
+  "Unmark all marked files across dired buffers."
+  (mapc
+   (lambda (dir-and-buf)
+     (with-current-buffer (cdr dir-and-buf)
+       (dired-unmark-all-files ?*)))
+   dired-buffers))
 
+(defun dired-nnn--get-dir-name-constructor (dir)
+  "Return a function that renames files to under DIR.
+
+See `dired-create-files'."
+  (lambda (fpath)
+    (file-name-concat dir (file-name-nondirectory fpath))))
+
+;; TODO does this actually refuse to mark the dots?
 ;;;###autoload
 (defun dired-nnn-toggle-mark ()
   "Toggle selection of the file or directory under the point.
 
-Cannot operate on '.' or '..'."
+Cannot mark '.' or '..'."
   (interactive)
+  (when (not (derived-mode-p 'dired-mode))
+    (error "Not a dired buffer."))
   (condition-case nil
-      (if (member
-           (dired-get-filename nil nil)
-           (dired-nnn--marked-files))
+      (if (member (dired-get-filename)
+                  (dired-nnn--marked-files))
           (dired-unmark nil)
         (dired-mark nil))
-    (error (message "Cannot operate on '.' or '..'"))))
+    (error "Cannot mark '.' or '..'")))
 
 ;;;###autoload
 (defun dired-nnn-paste (arg)
-  "Paste the selected files to the cwd.
+  "Copy marked dired files into the current dired directory.
 
-If `dired-nnn-mark-new-files' is non-nil, then recently created files will be
-marked.
-
-With prefix ARG, preserve marks on the original files. This overrides
-`dired-nnn-mark-new-files'."
+With `dired-nnn-mark-new-files', mark newly pasted files. With prefix ARG,
+preserve marks on the original files, overriding `dired-nnn-mark-new-files'."
   (interactive "P")
-  (let ((dir (dired-current-directory))
-        (selected-files (dired-nnn--marked-files)))
-    (if (not arg)
-        (dolist (dired-buffer dired-buffers)
-          (with-current-buffer (cdr dired-buffer)
-            (dired-unmark-all-files ?*))))
-    (dired-create-files #'copy-file "Copy" selected-files
-                        (dired-nnn--dest-filename-func dir)
-                        (when (and dired-nnn-mark-new-files (not arg))
-                          ?*))
-    (revert-buffer)))
+  (when (not (derived-mode-p 'dired-mode))
+    (error "Not a dired buffer."))
+  (let ((how-to-mark (cond (arg 'src)
+                           (dired-nnn-mark-new-files 'dest)
+                           (t nil)))
+        (cwd (dired-current-directory))
+        (marked-files (dired-nnn--marked-files)))
+    (when (not (eq how-to-mark 'src))
+      (dired-nnn--unmark-all-files))
+    (dired-create-files
+     #'dired-copy-file
+     "dired-nnn paste"
+     marked-files
+     (dired-nnn--get-dir-name-constructor cwd)
+     (when (eq how-to-mark 'dest) ?*)))
+  (revert-buffer))
 
 ;;;###autoload
-(defun dired-nnn-move ()
+(defun dired-nnn-move (arg)
   "Move the selected files to the cwd.
 
-If `dired-nnn-mark-new-files' is non-nil, then recently created files will be
-marked."
-  (interactive)
-  (let ((dir (dired-current-directory))
-        (selected-files (dired-nnn--marked-files)))
-    (dolist (dired-buffer dired-buffers)
-      (with-current-buffer (cdr dired-buffer)
-        (dired-unmark-all-files ?*)))
-    (dired-create-files #'rename-file "Rename" selected-files
-                        (dired-nnn--dest-filename-func dir)
-                        (when dired-nnn-mark-new-files ?*)))
+If ARG or `dired-nnn-mark-new-files' is non-nil, then recently created files
+will be marked."
+  (interactive "P")
+  (when (not (derived-mode-p 'dired-mode))
+    (error "Not a dired buffer."))
+  (let ((cwd (dired-current-directory))
+        (marked-files (dired-nnn--marked-files)))
+    (dired-nnn--unmark-all-files)
+    (dired-create-files
+     #'dired-rename-file
+     "dired-nnn move"
+     marked-files
+     (dired-nnn--get-dir-name-constructor cwd)
+     (when (or arg dired-nnn-mark-new-files) ?*)))
   (revert-buffer))
 
 (provide 'dired-nnn)
